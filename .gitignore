@@ -13,7 +13,6 @@ UnityGenerated/
 Library/
 
 
-
 # ===================================== #
 
 # Visual Studio / MonoDevelop generated #
@@ -69,3 +68,9 @@ GraphicsSettings.asset
 ProjectSettings.asset
 
 ProjectVersion.txt
+
+
+# ================ 에셋 제외하기
+
+MyPuzzle/Assets/
+
