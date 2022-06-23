@@ -72,5 +72,6 @@ ProjectVersion.txt
 
 # ================ 에셋 제외하기
 
-MyPuzzle/Assets/
+MyPuzzle/Assets/03. Asset/
+MyPuzzle/Assets/FruitFace_v1/
 
