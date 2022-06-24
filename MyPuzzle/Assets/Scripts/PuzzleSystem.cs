@@ -11,6 +11,7 @@ public class PuzzleSystem : MonoBehaviour
     public Vector3 StartPosition; //버블 생성 포지션
     public int RowNum;
     public int CulNum;
+    static GameObject BubbleParent = null;
 
     [SerializeField]
     public List<GameObject> poolingObjectPrefabs;
@@ -19,6 +20,7 @@ public class PuzzleSystem : MonoBehaviour
 
     private void Awake()
     {
+        BubbleParent = GameObject.Find("BubbleParent");
         PrefabNum = poolingObjectPrefabs.Count;
         BubbleNum = RowNum * CulNum;
         Instance = this;
@@ -32,21 +34,6 @@ public class PuzzleSystem : MonoBehaviour
             poolingObjectQueue.Enqueue(CreateNewObject()); //버블 생성
         }
 
-/*        //위치 배치하기
-        Vector3 tmp1 = StartPosition;
-        Vector3 tmp2 = StartPosition;
-
-        //위치 설정해주기
-        for (int i = 0; i < CulNum; i++)
-        {
-            tmp1 = tmp2;
-            for (int j = 0; j < RowNum; j++)
-            {
-                GetObject().transform.position = tmp1;
-                tmp1 += new Vector3(0, -10, 0);
-            }
-            tmp2 += new Vector3(10, 0, 0);
-        }*/
 
     }
 
@@ -55,8 +42,7 @@ public class PuzzleSystem : MonoBehaviour
         int randomNum = (int) Random.Range(0, PrefabNum);
         var newObj = Instantiate(poolingObjectPrefabs[randomNum]).GetComponent<Bubble>(); //생성
         newObj.gameObject.SetActive(false);
-        //newObj.transform.SetParent(transform);
-        newObj.transform.SetParent(GameObject.Find("Puzzle System").transform);
+        newObj.transform.SetParent(BubbleParent.transform);
 
         return newObj;
     }
@@ -65,19 +51,19 @@ public class PuzzleSystem : MonoBehaviour
     {
         if (Instance.poolingObjectQueue.Count > 0)
         {
-            var obj = Instance.poolingObjectQueue.Dequeue();
+            var obj = Instance.poolingObjectQueue.Dequeue(); //큐에서 오브젝트 꺼내기
 
             //obj.transform.SetParent(null);
-            obj.transform.SetParent(GameObject.Find("Puzzle System").transform);
+            obj.transform.SetParent(BubbleParent.transform);
             obj.gameObject.SetActive(true);
             return obj;
         }
-        else
+        else //다 꺼내고 없을 때 
         {
             var newObj = Instance.CreateNewObject();
 
             newObj.gameObject.SetActive(true);
-            newObj.transform.SetParent(GameObject.Find("Puzzle System").transform);
+            newObj.transform.SetParent(BubbleParent.transform);
             //newObj.transform.SetParent(null);
 
             return newObj;
@@ -88,7 +74,7 @@ public class PuzzleSystem : MonoBehaviour
     {
         obj.gameObject.SetActive(false);
 
-        obj.transform.SetParent(GameObject.Find("Puzzle System").transform);
+        obj.transform.SetParent(BubbleParent.transform);
         //obj.transform.SetParent(Instance.transform);
         Instance.poolingObjectQueue.Enqueue(obj);
     }
@@ -97,8 +83,6 @@ public class PuzzleSystem : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        for(int i=0; i<BubbleNum; i++)
-            GetObject();
 
         //위치 배치하기
         Vector3 tmp1 = StartPosition;
