@@ -2,6 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public struct SelectedBubbleIdx 
+{
+    public int row, cul;
+
+    public SelectedBubbleIdx(int r, int c) { row = r; cul = c; }
+}
+
 public class PuzzleSystem : MonoBehaviour
 {
     //오브젝트 풀 개발
@@ -20,6 +27,10 @@ public class PuzzleSystem : MonoBehaviour
 
     List<List<Bubble>> poolingObjectsList; //2차배열
 
+    //선택한 버블 구분하기 (크기 한정)
+    SelectedBubbleIdx[] SelectedBubbleIdxs; 
+
+
     private void Awake()
     {
         poolingObjectsList = new List<List<Bubble>>();
@@ -28,6 +39,13 @@ public class PuzzleSystem : MonoBehaviour
         BubbleNum = RowNum * CulNum;
         Instance = this;
         Init(BubbleNum);
+
+        //버블 선택 인덱스
+        SelectedBubbleIdx tmp = new SelectedBubbleIdx();
+        tmp.row = 0; tmp.cul = 0;
+        SelectedBubbleIdxs = new SelectedBubbleIdx[2];
+        SelectedBubbleIdxs[0] = tmp;
+        SelectedBubbleIdxs[1] = tmp;
     }
 
     private void Init(int initCount)
