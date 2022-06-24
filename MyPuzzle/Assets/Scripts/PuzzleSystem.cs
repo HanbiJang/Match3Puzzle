@@ -16,10 +16,13 @@ public class PuzzleSystem : MonoBehaviour
     [SerializeField]
     public List<GameObject> poolingObjectPrefabs;
 
-    Queue<Bubble> poolingObjectQueue = new Queue<Bubble>();
+    //Queue<Bubble> poolingObjectQueue = new Queue<Bubble>();
+
+    List<List<Bubble>> poolingObjectsList; //2차배열
 
     private void Awake()
     {
+        poolingObjectsList = new List<List<Bubble>>();
         BubbleParent = GameObject.Find("BubbleParent");
         PrefabNum = poolingObjectPrefabs.Count;
         BubbleNum = RowNum * CulNum;
@@ -29,9 +32,22 @@ public class PuzzleSystem : MonoBehaviour
 
     private void Init(int initCount)
     {
-        for (int i = 0; i < initCount; i++)
+        /*       //큐 버전
+               for (int i = 0; i < initCount; i++)
+               {
+                   poolingObjectQueue.Enqueue(CreateNewObject()); //버블 생성
+               }*/
+
+        for (int i = 0; i < RowNum; i++) 
         {
-            poolingObjectQueue.Enqueue(CreateNewObject()); //버블 생성
+            List<Bubble> tmpList = new List<Bubble>();
+            //열 만들기
+            for (int j = 0; j < CulNum; j++) 
+            {
+                tmpList.Add(CreateNewObject());
+            }
+            poolingObjectsList.Add(tmpList);
+
         }
 
 
@@ -47,11 +63,13 @@ public class PuzzleSystem : MonoBehaviour
         return newObj;
     }
 
-    public static Bubble GetObject()
+    public static Bubble GetObject(int row, int cul)
     {
-        if (Instance.poolingObjectQueue.Count > 0)
+        if (Instance.poolingObjectsList.Count > 0)
+        //if (Instance.poolingObjectQueue.Count > 0)
         {
-            var obj = Instance.poolingObjectQueue.Dequeue(); //큐에서 오브젝트 꺼내기
+            var obj = Instance.poolingObjectsList[row][cul];
+            //var obj = Instance.poolingObjectQueue.Dequeue(); //큐에서 오브젝트 꺼내기
 
             //obj.transform.SetParent(null);
             obj.transform.SetParent(BubbleParent.transform);
@@ -70,13 +88,14 @@ public class PuzzleSystem : MonoBehaviour
         }
     }
 
-    public static void ReturnObject(Bubble obj)
+    public static void ReturnObject(Bubble obj, int row, int cul)
     {
         obj.gameObject.SetActive(false);
 
         obj.transform.SetParent(BubbleParent.transform);
         //obj.transform.SetParent(Instance.transform);
-        Instance.poolingObjectQueue.Enqueue(obj);
+
+        //Instance.poolingObjectQueue.Enqueue(obj); //큐에 되돌려 주는 작업을 주석 처리
     }
 
 
@@ -94,7 +113,7 @@ public class PuzzleSystem : MonoBehaviour
             tmp1 = tmp2;
             for (int j = 0; j < RowNum; j++)
             {
-                var obj = GetObject();
+                var obj = GetObject(j,i);
                 obj.transform.localPosition = tmp1;
                 tmp1 += new Vector3(0, -30, 0);
 
