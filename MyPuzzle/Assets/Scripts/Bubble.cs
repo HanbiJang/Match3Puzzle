@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public enum BubbleType {
-    Normal,
-    Ice,
-    Bomb,
-    Lock,
+    Blue,
+    Green,
+    Orange,
+    Red,
+    Yellow,
 }
 
 public enum BubbleState {
@@ -38,6 +39,9 @@ public class Bubble : MonoBehaviour
     public BubbleInfo m_info;
     PuzzleSystem puzzleSystem;
 
+    //스캔에 필요한 변수
+    public bool visited = false;
+
     void Awake() {
         isSelected = false;
         m_info = new BubbleInfo();
@@ -48,7 +52,7 @@ public class Bubble : MonoBehaviour
     void SetIsSelected(bool b) { isSelected = b; }
 
     public void BtnBubbleOnClicked() {
-        
+
         //puzzle system 객체를 찾아내어서 SelectedBubbleIdxs의 값을 바꾼다
         if (puzzleSystem) {
 

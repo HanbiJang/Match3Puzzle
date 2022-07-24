@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public struct SelectedBubbleIdx 
+public struct SelectedBubbleIdx
 {
     public int row, cul;
 
@@ -28,8 +28,9 @@ public class PuzzleSystem : MonoBehaviour
     List<List<Bubble>> poolingObjectsList; //2차배열
 
     //선택한 버블 구분하기 (크기 한정)
-    public SelectedBubbleIdx[] SelectedBubbleIdxs; 
+    public SelectedBubbleIdx[] SelectedBubbleIdxs;
 
+    ScoreSystem scoreSystem;
 
     private void Awake()
     {
@@ -46,6 +47,9 @@ public class PuzzleSystem : MonoBehaviour
         SelectedBubbleIdxs = new SelectedBubbleIdx[2];
         SelectedBubbleIdxs[0] = tmp;
         SelectedBubbleIdxs[1] = tmp;
+
+        // 점수 시스템
+        scoreSystem = GameObject.Find("Score System").GetComponent<ScoreSystem>();
     }
 
     private void Init(int initCount)
@@ -56,11 +60,11 @@ public class PuzzleSystem : MonoBehaviour
                    poolingObjectQueue.Enqueue(CreateNewObject()); //버블 생성
                }*/
 
-        for (int i = 1; i <= RowNum; i++) 
+        for (int i = 1; i <= RowNum; i++)
         {
             List<Bubble> tmpList = new List<Bubble>();
             //열 만들기
-            for (int j = 1; j <= CulNum; j++) 
+            for (int j = 1; j <= CulNum; j++)
             {
                 tmpList.Add(CreateNewObject());
             }
@@ -73,10 +77,13 @@ public class PuzzleSystem : MonoBehaviour
 
     private Bubble CreateNewObject()
     {
-        int randomNum = (int) Random.Range(0, PrefabNum);
+        int randomNum = (int)Random.Range(0, PrefabNum);
         var newObj = Instantiate(poolingObjectPrefabs[randomNum]).GetComponent<Bubble>(); //생성
         newObj.gameObject.SetActive(false);
         newObj.transform.SetParent(BubbleParent.transform);
+
+        //타입 설정하기
+        newObj.m_type = (BubbleType)randomNum; //int -> enum
 
         return newObj;
     }
@@ -131,7 +138,7 @@ public class PuzzleSystem : MonoBehaviour
             tmp1 = tmp2;
             for (int j = 0; j < RowNum; j++)
             {
-                var obj = GetObject(j,i);
+                var obj = GetObject(j, i);
                 obj.transform.localPosition = tmp1;
                 tmp1 += new Vector3(0, -30, 0);
 
@@ -145,27 +152,34 @@ public class PuzzleSystem : MonoBehaviour
             }
             tmp2 += new Vector3(30, 0, 0);
         }
-      
-        
+
+
     }
 
     // Update is called once per frame
     void Update()
     {
         ChangeBubblePosition();
+        //ScanBubbles(); // 매치되는 버블이 있는지 탐색하기
+
     }
 
-    void ChangeBubblePosition() 
+
+    // 버블의 위치 바꾸기
+    void ChangeBubblePosition()
     {
         if (SelectedBubbleIdxs[0].row != -1 && SelectedBubbleIdxs[0].cul != -1
             && SelectedBubbleIdxs[1].row != -1 && SelectedBubbleIdxs[1].cul != -1)
         {
+
             //두 버블의 인덱스가 1차이 라면 자리를 바꾼다
             if (Mathf.Abs(SelectedBubbleIdxs[0].row - SelectedBubbleIdxs[1].row) <= 1 && Mathf.Abs(SelectedBubbleIdxs[0].cul - SelectedBubbleIdxs[1].cul) <= 1)
             {
-                Vector3 postmp = GetObject(SelectedBubbleIdxs[0].row, SelectedBubbleIdxs[0].cul).transform.localPosition;
-                GetObject(SelectedBubbleIdxs[0].row, SelectedBubbleIdxs[0].cul).transform.localPosition = GetObject(SelectedBubbleIdxs[1].row, SelectedBubbleIdxs[1].cul).transform.localPosition;
-                GetObject(SelectedBubbleIdxs[1].row, SelectedBubbleIdxs[1].cul).transform.localPosition = postmp;
+                // 위치 변경
+                Vector3 postmp_0 = GetObject(SelectedBubbleIdxs[0].row, SelectedBubbleIdxs[0].cul).transform.localPosition;
+                Vector3 postmp_1 = GetObject(SelectedBubbleIdxs[1].row, SelectedBubbleIdxs[1].cul).transform.localPosition;
+                GetObject(SelectedBubbleIdxs[0].row, SelectedBubbleIdxs[0].cul).transform.localPosition = postmp_1;
+                GetObject(SelectedBubbleIdxs[1].row, SelectedBubbleIdxs[1].cul).transform.localPosition = postmp_0;
 
                 //인덱스를 바꾼다
                 int row_0 = GetObject(SelectedBubbleIdxs[0].row, SelectedBubbleIdxs[0].cul).m_info.GetRow();
@@ -173,18 +187,33 @@ public class PuzzleSystem : MonoBehaviour
                 int row_1 = GetObject(SelectedBubbleIdxs[1].row, SelectedBubbleIdxs[1].cul).m_info.GetRow();
                 int cul_1 = GetObject(SelectedBubbleIdxs[1].row, SelectedBubbleIdxs[1].cul).m_info.GetCul();
 
-                GetObject(SelectedBubbleIdxs[0].row, SelectedBubbleIdxs[0].cul).m_info.SetRow(row_1);
-                GetObject(SelectedBubbleIdxs[0].row, SelectedBubbleIdxs[0].cul).m_info.SetCul(cul_1);
-                GetObject(SelectedBubbleIdxs[1].row, SelectedBubbleIdxs[1].cul).m_info.SetRow(row_0);
-                GetObject(SelectedBubbleIdxs[1].row, SelectedBubbleIdxs[1].cul).m_info.SetCul(cul_0);
-
-                Debug.Log("SelectedBubbleIdxs[0].row : " + SelectedBubbleIdxs[0].row + "SelectedBubbleIdxs[0].cul : " + SelectedBubbleIdxs[0].cul
-                    + "SelectedBubbleIdxs[1].row : " + SelectedBubbleIdxs[1].row + "SelectedBubbleIdxs[1].cul : " + SelectedBubbleIdxs[1].cul);
-
-                //원 배열의 인덱스에서 바꿈
+                //원 Instance의 배열의 인덱스에서 내용물 바꿈
                 var tmp = Instance.poolingObjectsList[row_0][cul_0];
                 Instance.poolingObjectsList[row_0][cul_0] = Instance.poolingObjectsList[row_1][cul_1];
                 Instance.poolingObjectsList[row_1][cul_1] = tmp;
+
+                // 매치가 되지 않을 시
+                if (!ScanBubbles())
+                {
+                    // 위치 변경 (초기화)
+                    GetObject(SelectedBubbleIdxs[0].row, SelectedBubbleIdxs[0].cul).transform.localPosition = postmp_1;
+                    GetObject(SelectedBubbleIdxs[1].row, SelectedBubbleIdxs[1].cul).transform.localPosition = postmp_0;
+
+                    // 원 배열 인덱스 초기화
+                    var tmp_ = Instance.poolingObjectsList[row_0][cul_0];
+                    Instance.poolingObjectsList[row_0][cul_0] = Instance.poolingObjectsList[row_1][cul_1];
+                    Instance.poolingObjectsList[row_1][cul_1] = tmp;
+                }
+                else // 매치가 될 시
+                {
+                    // 버블의 인덱스 정보(info) 변경
+                    GetObject(SelectedBubbleIdxs[0].row, SelectedBubbleIdxs[0].cul).m_info.SetRow(row_1);
+                    GetObject(SelectedBubbleIdxs[0].row, SelectedBubbleIdxs[0].cul).m_info.SetCul(cul_1);
+                    GetObject(SelectedBubbleIdxs[1].row, SelectedBubbleIdxs[1].cul).m_info.SetRow(row_0);
+                    GetObject(SelectedBubbleIdxs[1].row, SelectedBubbleIdxs[1].cul).m_info.SetCul(cul_0);
+
+                }
+
             }
 
             //선택 초기화
@@ -192,6 +221,148 @@ public class PuzzleSystem : MonoBehaviour
             SelectedBubbleIdxs[0].cul = -1;
             SelectedBubbleIdxs[1].row = -1;
             SelectedBubbleIdxs[1].cul = -1;
+            Debug.Log("select init");
         }
+    }
+
+    // 전체 버블을 스캔하기
+    bool ScanBubbles()
+    {
+        Bubble root;
+        bool HasMatchedBubbles = false; // 매치되는 버블이 있는지 판단
+        Queue queue = new Queue(); //방문할 큐
+
+        for (int i = 0; i < RowNum; i++)
+        {
+            for (int j = 0; j < CulNum; j++)
+            {
+                // root 변경
+                root = GetObject(i, j);
+                int typeCnt = 1;
+                queue.Enqueue(root); //큐의 끝에 Enqueue
+                root.visited = true; // (방문한 버블 체크)
+
+                // 3. 큐가 소진될 때까지 계속한다.
+                while (queue.Count != 0)
+                {
+                    Bubble r = (Bubble)queue.Dequeue(); // 큐의 앞에서 노드 추출
+
+                    //visit(r); //큐에서 추출한 노드 방문
+
+                    //큐에서 Dequeue한 노드의 인접 노드들을 모두 차례로 방문한다.
+
+                    //루트 노드의 row와 cul
+                    int r_row = r.m_info.GetRow();
+                    int r_cul = r.m_info.GetCul();
+
+                    Bubble b; //인접 노드
+
+                    // [1] 왼쪽
+                    if ((r_row >= 0 && r_row < RowNum) && (r_cul - 1 >= 0 && r_cul - 1 < CulNum))
+                    {
+                        b = Instance.poolingObjectsList[r_row][r_cul - 1];
+                        if (b.visited == false) // 방문하지 않았다면
+                        {
+                            b.visited = true; // 방문한 노드 체크
+
+                            // 타입이 같다면
+                            if (b.m_type == r.m_type)
+                            {
+                                typeCnt++;
+                                queue.Enqueue(b); // 큐의 끝에 Enqueue
+                            }
+
+                        }
+                    }
+
+
+                    // [2] 오른쪽
+                    if ((r_row >= 0 && r_row < RowNum) && (r_cul + 1 >= 0 && r_cul + 1 < CulNum))
+                    {
+                        b = Instance.poolingObjectsList[r_row][r_cul + 1];
+                        if (b.visited == false) // 방문하지 않았다면
+                        {
+                            b.visited = true; // 방문한 노드 체크
+
+                            // 타입이 같다면
+                            if (b.m_type == r.m_type)
+                            {
+                                typeCnt++;
+                                queue.Enqueue(b); // 큐의 끝에 Enqueue
+                            }
+                        }
+                    }
+
+
+                    // [3] 위
+                    if ((r_row - 1 >= 0 && r_row - 1 < RowNum) && (r_cul >= 0 && r_cul < CulNum))
+                    {
+                        b = Instance.poolingObjectsList[r_row - 1][r_cul];
+                        if (b.visited == false) // 방문하지 않았다면
+                        {
+                            b.visited = true; // 방문한 노드 체크
+
+                            // 타입이 같다면
+                            if (b.m_type == r.m_type)
+                            {
+                                typeCnt++;
+                                queue.Enqueue(b); // 큐의 끝에 Enqueue
+                            }
+                        }
+                    }
+
+                    // [4] 아래
+                    if ((r_row + 1 >= 0 && r_row + 1 < RowNum) && (r_cul >= 0 && r_cul < CulNum))
+                    {
+                        b = Instance.poolingObjectsList[r_row + 1][r_cul];
+                        if (b.visited == false) // 방문하지 않았다면
+                        {
+                            b.visited = true; // 방문한 노드 체크
+
+                            // 타입이 같다면
+                            if (b.m_type == r.m_type)
+                            {
+                                typeCnt++;
+                                queue.Enqueue(b); // 큐의 끝에 Enqueue
+                            }
+                        }
+                    }
+                }
+
+                if (typeCnt >= 3)
+                {
+                    HasMatchedBubbles = true;
+
+                    // 매치되는 버블들의 타입 변경 
+                    /*            int randomNum = (int)Random.Range(0, PrefabNum);
+                                //타입 설정하기
+                                newObj.m_type = (BubbleType)randomNum; //int -> enum*/
+
+
+                    // 점수 10점 증가
+                    if (scoreSystem)
+                    {
+                        scoreSystem.ChangeScore(10);
+                    }
+                }
+            }
+        }
+
+        //모든 visit 초기화
+        InitAllVisited();
+
+        return HasMatchedBubbles;
+    }
+
+    void InitAllVisited()
+    {
+        for (int i = 0; i < RowNum; i++)
+        {
+            for (int j = 0; j < CulNum; j++)
+            {
+                GetObject(i, j).visited = false;
+            }
+        }
+
     }
 }
