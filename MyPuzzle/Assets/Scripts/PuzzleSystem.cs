@@ -174,11 +174,11 @@ public class PuzzleSystem : MonoBehaviour
         }
 
         // 스캔되는 버블이 없을 때까지 반복
-        while (true) 
-        {
-            if (!ScanBubbles()) break;
-        }
-        
+        /*        while (true) 
+                {
+                    if (!ScanBubbles()) break;
+                }*/
+
 
     }
 
@@ -240,10 +240,10 @@ public class PuzzleSystem : MonoBehaviour
                     GetObject(SelectedBubbleIdxs[1].row, SelectedBubbleIdxs[1].cul).m_info.SetCul(cul_0);
 
                     // 스캔되는 버블이 없을 때까지 반복
-                    while (true)
-                    {
-                        if (!ScanBubbles()) break;
-                    }
+                    /*                    while (true)
+                                        {
+                                            if (!ScanBubbles()) break;
+                                        }*/
 
                 }
 
@@ -262,8 +262,7 @@ public class PuzzleSystem : MonoBehaviour
     {
         EnableInput = false;
         bool HasMatchedBubbles = false; // 매치되는 버블이 있는지 판단
-        //StartCoroutine(ScanBubbles_Co(HasMatchedBubbles));
-
+                                        //StartCoroutine(ScanBubbles_Co(HasMatchedBubbles));
         Bubble root;
         Queue queue = new Queue(); //방문할 큐
         List<Bubble> MatchedBubbles = new List<Bubble>(); //매칭된 버블들
@@ -278,7 +277,7 @@ public class PuzzleSystem : MonoBehaviour
                 queue.Enqueue(root); //큐의 끝에 Enqueue
                 root.visited = true; // (방문한 버블 체크)
 
-                // 큐가 소진될 때까지 계속한다.
+                // 큐가 소진될 때까지 계속 같은 타입을 찾는다
                 while (queue.Count != 0)
                 {
                     Bubble r = (Bubble)queue.Dequeue(); // 큐의 앞에서 노드 추출
@@ -294,6 +293,8 @@ public class PuzzleSystem : MonoBehaviour
 
                     Bubble b; //인접 노드
 
+                    Debug.Log("r.m_type : " + r.m_type);
+
                     // [1] 왼쪽
                     if ((r_row >= 0 && r_row < RowNum) && (r_cul - 1 >= 0 && r_cul - 1 < CulNum))
                     {
@@ -305,6 +306,7 @@ public class PuzzleSystem : MonoBehaviour
                             // 타입이 같다면
                             if (b.m_type == r.m_type)
                             {
+                                Debug.LogError("b.m_type : " + b.m_type);
                                 typeCnt++;
                                 queue.Enqueue(b); // 큐의 끝에 Enqueue
 
@@ -319,6 +321,7 @@ public class PuzzleSystem : MonoBehaviour
                     // [2] 오른쪽
                     if ((r_row >= 0 && r_row < RowNum) && (r_cul + 1 >= 0 && r_cul + 1 < CulNum))
                     {
+
                         b = Instance.poolingObjectsList[r_row][r_cul + 1];
                         if (b.visited == false) // 방문하지 않았다면
                         {
@@ -327,6 +330,8 @@ public class PuzzleSystem : MonoBehaviour
                             // 타입이 같다면
                             if (b.m_type == r.m_type)
                             {
+                                Debug.LogError("b.m_type : " + b.m_type);
+
                                 typeCnt++;
                                 queue.Enqueue(b); // 큐의 끝에 Enqueue
 
@@ -348,6 +353,8 @@ public class PuzzleSystem : MonoBehaviour
                             // 타입이 같다면
                             if (b.m_type == r.m_type)
                             {
+                                Debug.LogError("b.m_type : " + b.m_type);
+
                                 typeCnt++;
                                 queue.Enqueue(b); // 큐의 끝에 Enqueue
 
@@ -368,6 +375,8 @@ public class PuzzleSystem : MonoBehaviour
                             // 타입이 같다면
                             if (b.m_type == r.m_type)
                             {
+                                Debug.LogError("b.m_type : " + b.m_type);
+
                                 typeCnt++;
                                 queue.Enqueue(b); // 큐의 끝에 Enqueue
 
@@ -379,49 +388,49 @@ public class PuzzleSystem : MonoBehaviour
 
                 }
 
+                // 매치가 3번 이상 되면
                 if (typeCnt >= 3)
                 {
-
                     //Debug.Log(" typecnt : " + typeCnt);
                     HasMatchedBubbles = true;
 
-                    // 점수 10점 증가
+                    // 점수 10점 단위 증가
                     if (scoreSystem)
                     {
-                        scoreSystem.ChangeScore(10);
+                        scoreSystem.ChangeScore(10 * typeCnt);
                     }
 
                     for (int m = 0; m < MatchedBubbles.Count; m++)
                     {
                         // 타입과 이미지 변경
-                        int randomNum = (int)Random.Range(0, PrefabNum);
-                        MatchedBubbles[m].ChangeTypeAndImg(randomNum);
+/*                        int randomNum = (int)Random.Range(0, PrefabNum);
+                        MatchedBubbles[m].ChangeTypeAndImg(randomNum);*/
+
+                        // 이미지 색 변경
+                        MatchedBubbles[m].GetComponentInChildren<SpriteRenderer>().color = Color.red;
+                        Debug.LogError("... type : " + typeCnt);
                     }
 
                 }
 
                 // 매칭될 버블 초기화
-                MatchedBubbles.Clear();
+                //MatchedBubbles.Clear();
+                for (int m = 0; m < MatchedBubbles.Count; m++)
+                {
+                    MatchedBubbles.RemoveAt(m);
+                }
 
                 //모든 visit 초기화
                 InitAllVisited();
 
-                EnableInput = true;
             }
         }
 
-
-        Debug.Log(HasMatchedBubbles);
+        EnableInput = true;
         return HasMatchedBubbles;
     }
 
-    IEnumerator ScanBubbles_Co(bool HasMatchedBubbles)
-    {
-
-        yield return null;
-    }
-
-    IEnumerator ChangeMatchedBubbles(List<Bubble> MatchedBubbles) 
+    IEnumerator ChangeMatchedBubbles(List<Bubble> MatchedBubbles)
     {
         yield return null;
     }

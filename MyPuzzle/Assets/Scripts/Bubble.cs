@@ -57,7 +57,8 @@ public class Bubble : MonoBehaviour
     public void BtnBubbleOnClicked() {
 
         //puzzle system 객체를 찾아내어서 SelectedBubbleIdxs의 값을 바꾼다
-        if (puzzleSystem && puzzleSystem.EnableInput) { //입력 가능하면
+        if (puzzleSystem && puzzleSystem.EnableInput) 
+        { //입력 가능하면
 
             //row 와 cul 받아오기
             if (puzzleSystem.SelectedBubbleIdxs[0].row == -1 && puzzleSystem.SelectedBubbleIdxs[0].cul == -1)
@@ -73,18 +74,24 @@ public class Bubble : MonoBehaviour
                     puzzleSystem.SelectedBubbleIdxs[1].cul = m_info.GetCul();
                 }
             }
+
+            StartCoroutine(TurnRed());
         }
     }
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
 
-    // Update is called once per frame
-    void Update()
+    IEnumerator TurnRed() 
     {
-        
+        int cnt = 0;
+        while ( cnt <= 10) 
+        {
+            cnt++;
+            this.gameObject.GetComponentInChildren<SpriteRenderer>().color = Color.blue;
+            yield return new WaitForSeconds(0.1f);
+        }
+
+        this.gameObject.GetComponentInChildren<SpriteRenderer>().color = Color.white;
+
+        yield return null;
     }
 
     public void ChangeTypeAndImg(int type) 
