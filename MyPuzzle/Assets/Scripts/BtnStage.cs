@@ -9,6 +9,8 @@ public class BtnStage : MonoBehaviour
     int MaxStageNum;
     int StageNum;
 
+    public GameObject ToastM;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -22,5 +24,11 @@ public class BtnStage : MonoBehaviour
     public void BtnStageGame()
     {
         SceneManager.LoadScene(SceneName);
+    }
+
+
+    public void ShowToastM() 
+    {
+        ToastM.GetComponent<Animation>().Play("ToastM");
     }
 }

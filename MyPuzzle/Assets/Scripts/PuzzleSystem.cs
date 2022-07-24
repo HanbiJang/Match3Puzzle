@@ -28,7 +28,7 @@ public class PuzzleSystem : MonoBehaviour
     List<List<Bubble>> poolingObjectsList; //2차배열
 
     //선택한 버블 구분하기 (크기 한정)
-    SelectedBubbleIdx[] SelectedBubbleIdxs; 
+    public SelectedBubbleIdx[] SelectedBubbleIdxs; 
 
 
     private void Awake()
@@ -38,11 +38,11 @@ public class PuzzleSystem : MonoBehaviour
         PrefabNum = poolingObjectPrefabs.Count;
         BubbleNum = RowNum * CulNum;
         Instance = this;
-        Init(BubbleNum);
+        Init(BubbleNum); //버블 만들어주기
 
         //버블 선택 인덱스
         SelectedBubbleIdx tmp = new SelectedBubbleIdx();
-        tmp.row = 0; tmp.cul = 0;
+        tmp.row = -1; tmp.cul = -1;
         SelectedBubbleIdxs = new SelectedBubbleIdx[2];
         SelectedBubbleIdxs[0] = tmp;
         SelectedBubbleIdxs[1] = tmp;
@@ -56,11 +56,11 @@ public class PuzzleSystem : MonoBehaviour
                    poolingObjectQueue.Enqueue(CreateNewObject()); //버블 생성
                }*/
 
-        for (int i = 0; i < RowNum; i++) 
+        for (int i = 1; i <= RowNum; i++) 
         {
             List<Bubble> tmpList = new List<Bubble>();
             //열 만들기
-            for (int j = 0; j < CulNum; j++) 
+            for (int j = 1; j <= CulNum; j++) 
             {
                 tmpList.Add(CreateNewObject());
             }
@@ -138,6 +138,10 @@ public class PuzzleSystem : MonoBehaviour
                 //스케일 설정
                 obj.transform.localScale = new Vector3(40, 40, 40);
 
+                //row 와 cul 설정해주기
+                obj.m_info.SetRow(j);
+                obj.m_info.SetCul(i);
+
             }
             tmp2 += new Vector3(30, 0, 0);
         }
@@ -148,6 +152,20 @@ public class PuzzleSystem : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        if (SelectedBubbleIdxs[1].row != -1 && SelectedBubbleIdxs[1].cul != -1) 
+        {
+            //두 버블의 인덱스가 1차이 라면 자리를 바꾼다
+            if ( Mathf.Abs(SelectedBubbleIdxs[0].row - SelectedBubbleIdxs[1].row) <= 1 && Mathf.Abs(SelectedBubbleIdxs[0].cul - SelectedBubbleIdxs[1].cul) <= 1) {
+                Vector3 postmp = GetObject(SelectedBubbleIdxs[0].row, SelectedBubbleIdxs[0].cul).transform.localPosition;
+                GetObject(SelectedBubbleIdxs[0].row, SelectedBubbleIdxs[0].cul).transform.localPosition = GetObject(SelectedBubbleIdxs[1].row, SelectedBubbleIdxs[1].cul).transform.localPosition;
+                GetObject(SelectedBubbleIdxs[1].row, SelectedBubbleIdxs[1].cul).transform.localPosition = postmp;
+            }
+            
+            //선택 초기화
+            SelectedBubbleIdxs[0].row = -1;
+            SelectedBubbleIdxs[0].cul = -1;
+            SelectedBubbleIdxs[1].row = -1;
+            SelectedBubbleIdxs[1].cul = -1;
+        }
     }
 }
