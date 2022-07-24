@@ -152,15 +152,41 @@ public class PuzzleSystem : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (SelectedBubbleIdxs[1].row != -1 && SelectedBubbleIdxs[1].cul != -1) 
+        ChangeBubblePosition();
+    }
+
+    void ChangeBubblePosition() 
+    {
+        if (SelectedBubbleIdxs[0].row != -1 && SelectedBubbleIdxs[0].cul != -1
+            && SelectedBubbleIdxs[1].row != -1 && SelectedBubbleIdxs[1].cul != -1)
         {
             //두 버블의 인덱스가 1차이 라면 자리를 바꾼다
-            if ( Mathf.Abs(SelectedBubbleIdxs[0].row - SelectedBubbleIdxs[1].row) <= 1 && Mathf.Abs(SelectedBubbleIdxs[0].cul - SelectedBubbleIdxs[1].cul) <= 1) {
+            if (Mathf.Abs(SelectedBubbleIdxs[0].row - SelectedBubbleIdxs[1].row) <= 1 && Mathf.Abs(SelectedBubbleIdxs[0].cul - SelectedBubbleIdxs[1].cul) <= 1)
+            {
                 Vector3 postmp = GetObject(SelectedBubbleIdxs[0].row, SelectedBubbleIdxs[0].cul).transform.localPosition;
                 GetObject(SelectedBubbleIdxs[0].row, SelectedBubbleIdxs[0].cul).transform.localPosition = GetObject(SelectedBubbleIdxs[1].row, SelectedBubbleIdxs[1].cul).transform.localPosition;
                 GetObject(SelectedBubbleIdxs[1].row, SelectedBubbleIdxs[1].cul).transform.localPosition = postmp;
+
+                //인덱스를 바꾼다
+                int row_0 = GetObject(SelectedBubbleIdxs[0].row, SelectedBubbleIdxs[0].cul).m_info.GetRow();
+                int cul_0 = GetObject(SelectedBubbleIdxs[0].row, SelectedBubbleIdxs[0].cul).m_info.GetCul();
+                int row_1 = GetObject(SelectedBubbleIdxs[1].row, SelectedBubbleIdxs[1].cul).m_info.GetRow();
+                int cul_1 = GetObject(SelectedBubbleIdxs[1].row, SelectedBubbleIdxs[1].cul).m_info.GetCul();
+
+                GetObject(SelectedBubbleIdxs[0].row, SelectedBubbleIdxs[0].cul).m_info.SetRow(row_1);
+                GetObject(SelectedBubbleIdxs[0].row, SelectedBubbleIdxs[0].cul).m_info.SetCul(cul_1);
+                GetObject(SelectedBubbleIdxs[1].row, SelectedBubbleIdxs[1].cul).m_info.SetRow(row_0);
+                GetObject(SelectedBubbleIdxs[1].row, SelectedBubbleIdxs[1].cul).m_info.SetCul(cul_0);
+
+                Debug.Log("SelectedBubbleIdxs[0].row : " + SelectedBubbleIdxs[0].row + "SelectedBubbleIdxs[0].cul : " + SelectedBubbleIdxs[0].cul
+                    + "SelectedBubbleIdxs[1].row : " + SelectedBubbleIdxs[1].row + "SelectedBubbleIdxs[1].cul : " + SelectedBubbleIdxs[1].cul);
+
+                //원 배열의 인덱스에서 바꿈
+                var tmp = Instance.poolingObjectsList[row_0][cul_0];
+                Instance.poolingObjectsList[row_0][cul_0] = Instance.poolingObjectsList[row_1][cul_1];
+                Instance.poolingObjectsList[row_1][cul_1] = tmp;
             }
-            
+
             //선택 초기화
             SelectedBubbleIdxs[0].row = -1;
             SelectedBubbleIdxs[0].cul = -1;

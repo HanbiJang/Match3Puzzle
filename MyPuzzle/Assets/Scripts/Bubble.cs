@@ -53,17 +53,21 @@ public class Bubble : MonoBehaviour
         if (puzzleSystem) {
 
             //row 와 cul 받아오기
-            if (puzzleSystem.SelectedBubbleIdxs[0].row == -1)
+            if (puzzleSystem.SelectedBubbleIdxs[0].row == -1 && puzzleSystem.SelectedBubbleIdxs[0].cul == -1)
             {
                 puzzleSystem.SelectedBubbleIdxs[0].row = m_info.GetRow();
                 puzzleSystem.SelectedBubbleIdxs[0].cul = m_info.GetCul();
+                return;
             }
             else 
             {
-                puzzleSystem.SelectedBubbleIdxs[1].row = m_info.GetRow();
-                puzzleSystem.SelectedBubbleIdxs[1].cul = m_info.GetCul();
+                if (puzzleSystem.SelectedBubbleIdxs[1].row == -1 && puzzleSystem.SelectedBubbleIdxs[1].cul == -1)
+                {
+                    puzzleSystem.SelectedBubbleIdxs[1].row = m_info.GetRow();
+                    puzzleSystem.SelectedBubbleIdxs[1].cul = m_info.GetCul();
+                    return;
+                }
             }
-
 
         }
     }
