@@ -32,7 +32,6 @@ public class BubbleInfo {
 
 public class Bubble : MonoBehaviour
 {
-
     public BubbleType m_type;
     public BubbleState m_state;
     bool isSelected; //선택 되었는지 여부
@@ -42,26 +41,29 @@ public class Bubble : MonoBehaviour
     //스캔에 필요한 변수
     public bool visited = false;
 
+    // 버블의 스프라이트
+    SpriteRenderer m_Img;
+    // 버블의 애니메이터
+    Animator m_Animator;
+
     void Awake() {
-        isSelected = false;
         m_info = new BubbleInfo();
         puzzleSystem = GameObject.Find("Puzzle System").GetComponent<PuzzleSystem>();
-    }
 
-    bool GetIsSelected() { return isSelected; }
-    void SetIsSelected(bool b) { isSelected = b; }
+        m_Img = GetComponentInChildren<SpriteRenderer>();
+        m_Animator = GetComponent<Animator>();
+    }
 
     public void BtnBubbleOnClicked() {
 
         //puzzle system 객체를 찾아내어서 SelectedBubbleIdxs의 값을 바꾼다
-        if (puzzleSystem) {
+        if (puzzleSystem && puzzleSystem.EnableInput) { //입력 가능하면
 
             //row 와 cul 받아오기
             if (puzzleSystem.SelectedBubbleIdxs[0].row == -1 && puzzleSystem.SelectedBubbleIdxs[0].cul == -1)
             {
                 puzzleSystem.SelectedBubbleIdxs[0].row = m_info.GetRow();
                 puzzleSystem.SelectedBubbleIdxs[0].cul = m_info.GetCul();
-                return;
             }
             else 
             {
@@ -69,10 +71,8 @@ public class Bubble : MonoBehaviour
                 {
                     puzzleSystem.SelectedBubbleIdxs[1].row = m_info.GetRow();
                     puzzleSystem.SelectedBubbleIdxs[1].cul = m_info.GetCul();
-                    return;
                 }
             }
-
         }
     }
     // Start is called before the first frame update
@@ -85,6 +85,48 @@ public class Bubble : MonoBehaviour
     void Update()
     {
         
+    }
+
+    public void ChangeTypeAndImg(int type) 
+    {
+        // 타입 변경
+        m_type = (BubbleType)type;
+
+        switch (type) {
+            case 0:
+                // 애니메이터 변경
+                m_Animator.runtimeAnimatorController = puzzleSystem.AnimCont_Blue;
+                // 이미지 변경
+                m_Img.sprite = puzzleSystem.Sprite_Blue;
+                break;
+            case 1:
+                // 애니메이터 변경
+                m_Animator.runtimeAnimatorController = puzzleSystem.AnimCont_Green;
+                // 이미지 변경
+                m_Img.sprite = puzzleSystem.Sprite_Green;
+                break;
+            case 2:
+                // 애니메이터 변경
+                m_Animator.runtimeAnimatorController = puzzleSystem.AnimCont_Orange;
+                // 이미지 변경
+                m_Img.sprite = puzzleSystem.Sprite_Orange;
+                break;
+            case 3:
+                // 애니메이터 변경
+                m_Animator.runtimeAnimatorController = puzzleSystem.AnimCont_Red;
+                // 이미지 변경
+                m_Img.sprite = puzzleSystem.Sprite_Red;
+                break;
+            case 4:
+                // 애니메이터 변경
+                m_Animator.runtimeAnimatorController = puzzleSystem.AnimCont_Yellow;
+                // 이미지 변경
+                m_Img.sprite = puzzleSystem.Sprite_Yellow;
+                break;
+        }
+
+
+
     }
 
 

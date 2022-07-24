@@ -548,6 +548,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 724477376}
+  - component: {fileID: 724477377}
   m_Layer: 0
   m_Name: Score System
   m_TagString: Untagged
@@ -570,6 +571,19 @@ Transform:
   m_Father: {fileID: 2016795336}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &724477377
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 724477375}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 576e4d273a45a89478e4d0adb727755d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ScoreText: {fileID: 800555800}
 --- !u!1 &767382560
 GameObject:
   m_ObjectHideFlags: 0
@@ -654,6 +668,17 @@ MonoBehaviour:
   - {fileID: 125166, guid: 0fa72a843191b2e4c924dfe0c98fd45e, type: 3}
   - {fileID: 101480, guid: 858a256717922b94c8c31524c3075d55, type: 3}
   - {fileID: 151478, guid: 26017852f58bdfe4584111c080628521, type: 3}
+  EnableInput: 1
+  AnimCont_Blue: {fileID: 9100000, guid: 64ebde7c4183072478ac120b349e9196, type: 2}
+  AnimCont_Green: {fileID: 9100000, guid: 5bc9e8a49d608014e9c27c8f03f02912, type: 2}
+  AnimCont_Orange: {fileID: 9100000, guid: b59ab9a3fd11c88469ddbdf38c2dde4a, type: 2}
+  AnimCont_Red: {fileID: 9100000, guid: ee79d33cdc161234782eb3a82337d7b9, type: 2}
+  AnimCont_Yellow: {fileID: 9100000, guid: 440de2521aefa744fafdc7ab2f7d251e, type: 2}
+  Sprite_Blue: {fileID: 21300008, guid: 51e2a399831333b478ec978ee598bf0e, type: 3}
+  Sprite_Green: {fileID: 21300004, guid: 51e2a399831333b478ec978ee598bf0e, type: 3}
+  Sprite_Orange: {fileID: 21300016, guid: 51e2a399831333b478ec978ee598bf0e, type: 3}
+  Sprite_Red: {fileID: 21300000, guid: 51e2a399831333b478ec978ee598bf0e, type: 3}
+  Sprite_Yellow: {fileID: 21300012, guid: 51e2a399831333b478ec978ee598bf0e, type: 3}
 --- !u!1 &800555798
 GameObject:
   m_ObjectHideFlags: 0
