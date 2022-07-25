@@ -41,6 +41,17 @@ public class Bubble : MonoBehaviour
     //스캔에 필요한 변수
     public bool visited = false;
 
+    public void SetVisited(bool b) { visited = b; }
+    public bool GetVisited() { return visited; }
+
+    public BubbleType GetMType() { return m_type; }
+    public void SetMType(BubbleType type) { m_type = type; }
+
+    public BubbleInfo GetBubbleInfo() { return m_info; }
+    public void SetBubbleInfo(BubbleInfo bi) { m_info = bi; }
+
+
+
     // 버블의 스프라이트
     SpriteRenderer m_Img;
     // 버블의 애니메이터
@@ -75,11 +86,13 @@ public class Bubble : MonoBehaviour
                 }
             }
 
-            StartCoroutine(TurnRed());
+            //puzzleSystem.ChangePosOnceonly = false;
+
+            Debug.Log("Clicked");
         }
     }
 
-    IEnumerator TurnRed() 
+/*    IEnumerator TurnBlue() 
     {
         int cnt = 0;
         while ( cnt <= 10) 
@@ -92,16 +105,36 @@ public class Bubble : MonoBehaviour
         this.gameObject.GetComponentInChildren<SpriteRenderer>().color = Color.white;
 
         yield return null;
-    }
+    }*/
 
     public void ChangeTypeAndImg(int type) 
     {
         // 타입 변경
         m_type = (BubbleType)type;
+        StartCoroutine(ChangeImgColor(type));
 
-        switch (type) {
+        // 이름도 변경
+        Debug.Log(" m_info.GetRow()" + m_info.GetRow() + "  m_info.GetCul() : " + m_info.GetCul());
+        gameObject.name = "Bubble" + m_type + " _" + m_info.GetRow() + " _" + m_info.GetCul();
+    }
+
+    IEnumerator ChangeImgColor(int type) 
+    {
+        int cnt = 0;
+        float alpha = 1;
+
+        while (cnt < 20) 
+        {
+            m_Img.color = new Color(m_Img.color.r, m_Img.color.g, m_Img.color.b, alpha);
+            alpha -= 0.05f;
+            cnt++;
+            yield return new WaitForSeconds(0.03f);
+        }
+
+        switch (type)
+        {
             case 0:
-                // 애니메이터 변경
+                // 애니메이터 변경              
                 m_Animator.runtimeAnimatorController = puzzleSystem.AnimCont_Blue;
                 // 이미지 변경
                 m_Img.sprite = puzzleSystem.Sprite_Blue;
@@ -132,8 +165,18 @@ public class Bubble : MonoBehaviour
                 break;
         }
 
+        cnt = 0;
+        alpha = 0;
+        while (cnt < 20)
+        {
+            m_Img.color = new Color(m_Img.color.r, m_Img.color.g, m_Img.color.b, alpha);
+            alpha += 0.05f;
 
+            cnt++;
+            yield return new WaitForSeconds(0.03f);
+        }
 
+        yield return null;
     }
 
 

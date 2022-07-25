@@ -20,6 +20,11 @@ public class ScoreSystem : MonoBehaviour
          
     }
 
+    public int GetScore() 
+    {
+        return Score;
+    }
+
     public void ChangeScore(int Bonus) 
     {
         Score += Bonus;
