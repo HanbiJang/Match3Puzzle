@@ -232,7 +232,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.6320754, g: 0.6320754, b: 0.6320754, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -525,7 +525,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.63529414, g: 0.63529414, b: 0.63529414, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -573,7 +573,8 @@ Animation:
   m_Enabled: 1
   serializedVersion: 3
   m_Animation: {fileID: 7400000, guid: 581e7ff9d075db7488eb872987577ddb, type: 2}
-  m_Animations: []
+  m_Animations:
+  - {fileID: 7400000, guid: 581e7ff9d075db7488eb872987577ddb, type: 2}
   m_WrapMode: 0
   m_PlayAutomatically: 0
   m_AnimatePhysics: 0
@@ -702,7 +703,8 @@ Animation:
   m_Enabled: 1
   serializedVersion: 3
   m_Animation: {fileID: 7400000, guid: 581e7ff9d075db7488eb872987577ddb, type: 2}
-  m_Animations: []
+  m_Animations:
+  - {fileID: 7400000, guid: 581e7ff9d075db7488eb872987577ddb, type: 2}
   m_WrapMode: 0
   m_PlayAutomatically: 0
   m_AnimatePhysics: 0
@@ -1751,6 +1753,18 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 691394900}
     m_Modifications:
+    - target: {fileID: 7807379302873525266, guid: 26fc8a92c5227ca43b2ec444c2ee7c6f, type: 3}
+      propertyPath: m_Color.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7807379302873525266, guid: 26fc8a92c5227ca43b2ec444c2ee7c6f, type: 3}
+      propertyPath: m_Color.g
+      value: 0.92852294
+      objectReference: {fileID: 0}
+    - target: {fileID: 7807379302873525266, guid: 26fc8a92c5227ca43b2ec444c2ee7c6f, type: 3}
+      propertyPath: m_Color.r
+      value: 0.5707547
+      objectReference: {fileID: 0}
     - target: {fileID: 7807379302873525276, guid: 26fc8a92c5227ca43b2ec444c2ee7c6f, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
