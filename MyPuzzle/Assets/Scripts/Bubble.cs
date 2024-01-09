@@ -18,44 +18,38 @@ public enum BubbleState {
 public class BubbleInfo {
     int row;
     int cul;
+    BubbleState state; //매치 상태 정보
+    BubbleType type; //버블의 타입
 
     public int GetRow() { return row; }
     public int GetCul() { return cul; }
     public void SetRow(int row_) { row = row_; }
     public void SetCul(int cul_) { cul = cul_; }
+    public BubbleState GetState() { return state; }
+    public void SetState(BubbleState state_) { state = state_; }
+    public BubbleType GetType_() { return type; }
+    public void SetType(BubbleType type_) { type = type_; }
 
     public void Init(int r, int c) {
         row = r;
         cul = c;
+        state = BubbleState.UnMatched;
     }
 }
 
 public class Bubble : MonoBehaviour
 {
-    public BubbleType m_type;
-    public BubbleState m_state;
-    bool isSelected; //선택 되었는지 여부
-    public BubbleInfo m_info;
     PuzzleSystem puzzleSystem;
 
-    //스캔에 필요한 변수
-    public bool visited = false;
+    bool isSelected; //사용자에 의해 선택 되었는지 여부
+    public BubbleInfo m_info;
+    public bool visited = false; //매치 스캔에 필요한 변수
 
     public void SetVisited(bool b) { visited = b; }
     public bool GetVisited() { return visited; }
-
-    public BubbleType GetMType() { return m_type; }
-    public void SetMType(BubbleType type) { m_type = type; }
-
-    public BubbleInfo GetBubbleInfo() { return m_info; }
-    public void SetBubbleInfo(BubbleInfo bi) { m_info = bi; }
-
-
-
-    // 버블의 스프라이트
-    SpriteRenderer m_Img;
-    // 버블의 애니메이터
-    Animator m_Animator;
+    
+    SpriteRenderer m_Img; // 버블의 스프라이트
+    Animator m_Animator; // 버블의 애니메이터
 
     void Awake() {
         m_info = new BubbleInfo();
@@ -85,10 +79,6 @@ public class Bubble : MonoBehaviour
                     puzzleSystem.SelectedBubbleIdxs[1].cul = m_info.GetCul();
                 }
             }
-
-            //puzzleSystem.ChangePosOnceonly = false;
-
-            Debug.Log("Clicked");
         }
     }
 
@@ -110,12 +100,11 @@ public class Bubble : MonoBehaviour
     public void ChangeTypeAndImg(int type) 
     {
         // 타입 변경
-        m_type = (BubbleType)type;
+        m_info.SetType((BubbleType)type);
         StartCoroutine(ChangeImgColor(type));
 
         // 이름도 변경
-        Debug.Log(" m_info.GetRow()" + m_info.GetRow() + "  m_info.GetCul() : " + m_info.GetCul());
-        gameObject.name = "Bubble" + m_type + " _" + m_info.GetRow() + " _" + m_info.GetCul();
+        gameObject.name = "Bubble" + m_info.GetType() + " _" + m_info.GetRow() + " _" + m_info.GetCul();
     }
 
     IEnumerator ChangeImgColor(int type) 
