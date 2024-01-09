@@ -2,20 +2,23 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum BubbleType {
-    Blue,
+public enum BubbleType 
+{
+    Blue, //0
     Green,
     Orange,
     Red,
     Yellow,
 }
 
-public enum BubbleState {
+public enum BubbleState 
+{
     UnMatched,
     Matched,
 }
 
-public class BubbleInfo {
+public class BubbleInfo 
+{
     int row;
     int cul;
     BubbleState state; //매치 상태 정보
@@ -45,71 +48,71 @@ public class Bubble : MonoBehaviour
     public BubbleInfo m_info;
     public bool visited = false; //매치 스캔에 필요한 변수
 
+    public BubbleInfo GetBubbleInfo() { return m_info; }
+    public void SetBubbleInfo(BubbleInfo binfo) { m_info = binfo; }
+
     public void SetVisited(bool b) { visited = b; }
     public bool GetVisited() { return visited; }
     
-    SpriteRenderer m_Img; // 버블의 스프라이트
-    Animator m_Animator; // 버블의 애니메이터
+    SpriteRenderer m_Img; //버블의 스프라이트
+    Animator m_Animator; //버블의 애니메이터
 
-    void Awake() {
-        m_info = new BubbleInfo();
+    void Awake() 
+    {
         puzzleSystem = GameObject.Find("Puzzle System").GetComponent<PuzzleSystem>();
-
+        m_info = new BubbleInfo();     
         m_Img = GetComponentInChildren<SpriteRenderer>();
         m_Animator = GetComponent<Animator>();
     }
 
-    public void BtnBubbleOnClicked() {
-
-        //puzzle system 객체를 찾아내어서 SelectedBubbleIdxs의 값을 바꾼다
+    //버블을 버튼으로써 활용, 버튼 함수로 등록
+    public void BtnBubbleOnClicked() 
+    {
         if (puzzleSystem && puzzleSystem.EnableInput) 
-        { //입력 가능하면
+        {
+            SelectedBubbleIdx firstBubble = puzzleSystem.SelectedBubbleIdxs[0];
+            SelectedBubbleIdx secondBubble = puzzleSystem.SelectedBubbleIdxs[1];
 
-            //row 와 cul 받아오기
-            if (puzzleSystem.SelectedBubbleIdxs[0].row == -1 && puzzleSystem.SelectedBubbleIdxs[0].cul == -1)
+            if (firstBubble.row == -1 && firstBubble.cul == -1) //정해지지 않았을 시
             {
-                puzzleSystem.SelectedBubbleIdxs[0].row = m_info.GetRow();
-                puzzleSystem.SelectedBubbleIdxs[0].cul = m_info.GetCul();
+                firstBubble.row = m_info.GetRow();
+                firstBubble.cul = m_info.GetCul();
             }
             else 
             {
-                if (puzzleSystem.SelectedBubbleIdxs[1].row == -1 && puzzleSystem.SelectedBubbleIdxs[1].cul == -1)
+                if (secondBubble.row == -1 && secondBubble.cul == -1)
                 {
-                    puzzleSystem.SelectedBubbleIdxs[1].row = m_info.GetRow();
-                    puzzleSystem.SelectedBubbleIdxs[1].cul = m_info.GetCul();
+                    secondBubble.row = m_info.GetRow();
+                    secondBubble.cul = m_info.GetCul();
                 }
             }
         }
     }
 
-/*    IEnumerator TurnBlue() 
+
+    public void ChangeTypeAndLooks(int type) 
     {
-        int cnt = 0;
-        while ( cnt <= 10) 
-        {
-            cnt++;
-            this.gameObject.GetComponentInChildren<SpriteRenderer>().color = Color.blue;
-            yield return new WaitForSeconds(0.1f);
-        }
-
-        this.gameObject.GetComponentInChildren<SpriteRenderer>().color = Color.white;
-
-        yield return null;
-    }*/
-
-    public void ChangeTypeAndImg(int type) 
-    {
-        // 타입 변경
+        //타입 변경
         m_info.SetType((BubbleType)type);
-        StartCoroutine(ChangeImgColor(type));
+        StartCoroutine(ChangeBubbleLooksWithAnim(type));
 
-        // 이름도 변경
+        //이름도 변경
         gameObject.name = "Bubble" + m_info.GetType() + " _" + m_info.GetRow() + " _" + m_info.GetCul();
     }
 
-    IEnumerator ChangeImgColor(int type) 
+    IEnumerator ChangeBubbleLooksWithAnim(int type) 
     {
-        int cnt = 0;
+        //각 단계가 제대로 완료된 후에 다음 단계로
+        yield return StartCoroutine(CoSetTransparent());
+        ChangeBubbleLooks(type);
+        yield return StartCoroutine(CoSetOpaque());
+    }
+
+
+    //투명해지기
+    IEnumerator CoSetTransparent() 
+    {
+        int cnt = 0; //프레임 세는 용도
         float alpha = 1;
 
         while (cnt < 20) 
@@ -119,44 +122,16 @@ public class Bubble : MonoBehaviour
             cnt++;
             yield return new WaitForSeconds(0.03f);
         }
+        yield return null;
+    }
 
-        switch (type)
-        {
-            case 0:
-                // 애니메이터 변경              
-                m_Animator.runtimeAnimatorController = puzzleSystem.AnimCont_Blue;
-                // 이미지 변경
-                m_Img.sprite = puzzleSystem.Sprite_Blue;
-                break;
-            case 1:
-                // 애니메이터 변경
-                m_Animator.runtimeAnimatorController = puzzleSystem.AnimCont_Green;
-                // 이미지 변경
-                m_Img.sprite = puzzleSystem.Sprite_Green;
-                break;
-            case 2:
-                // 애니메이터 변경
-                m_Animator.runtimeAnimatorController = puzzleSystem.AnimCont_Orange;
-                // 이미지 변경
-                m_Img.sprite = puzzleSystem.Sprite_Orange;
-                break;
-            case 3:
-                // 애니메이터 변경
-                m_Animator.runtimeAnimatorController = puzzleSystem.AnimCont_Red;
-                // 이미지 변경
-                m_Img.sprite = puzzleSystem.Sprite_Red;
-                break;
-            case 4:
-                // 애니메이터 변경
-                m_Animator.runtimeAnimatorController = puzzleSystem.AnimCont_Yellow;
-                // 이미지 변경
-                m_Img.sprite = puzzleSystem.Sprite_Yellow;
-                break;
-        }
+    //불투명해지기
+    IEnumerator CoSetOpaque() 
+    {
+        int cnt = 0; //프레임 세는 용도
+        float alpha = 0;
 
-        cnt = 0;
-        alpha = 0;
-        while (cnt < 20)
+        while (cnt < 20) //불투명해지기
         {
             m_Img.color = new Color(m_Img.color.r, m_Img.color.g, m_Img.color.b, alpha);
             alpha += 0.05f;
@@ -168,5 +143,11 @@ public class Bubble : MonoBehaviour
         yield return null;
     }
 
+    //퍼즐 외형 변경
+    void ChangeBubbleLooks(int type) 
+    {
+        m_Animator.runtimeAnimatorController = puzzleSystem.BubbleAnimContsList[type];
+        m_Img.sprite = puzzleSystem.BubbleSpritesList[type];
+    }
 
 }

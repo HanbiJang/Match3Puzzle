@@ -6,8 +6,6 @@ using UnityEngine;
 public struct SelectedBubbleIdx
 {
     public int row, cul;
-
-    public SelectedBubbleIdx(int r, int c) { row = r; cul = c; }
 }
 
 public class PuzzleSystem : MonoBehaviour
@@ -16,44 +14,29 @@ public class PuzzleSystem : MonoBehaviour
     public static PuzzleSystem Instance;
     int BubbleNum;
     int PrefabNum;
-    public Vector3 StartPosition; //버블 생성 포지션
+    [SerializeField]
+    public List<GameObject> poolingObjectPrefabs;
+    List<List<Bubble>> poolingObjectsList; //2차배열
+
+    //버블 생성 포지션
+    public Vector3 StartPosition; 
     public int RowNum;
     public int CulNum;
     static GameObject BubbleParent = null;
 
-    [SerializeField]
-    public List<GameObject> poolingObjectPrefabs;
+    //점수 시스템
+    ScoreSystem scoreSystem;
 
-    //Queue<Bubble> poolingObjectQueue = new Queue<Bubble>();
-
-    List<List<Bubble>> poolingObjectsList; //2차배열
-
-    //선택한 버블 구분하기 (크기 한정)
+    //선택한 2개의 버블
     public SelectedBubbleIdx[] SelectedBubbleIdxs;
+    public bool EnableInput = true; // 사용자가 입력이 가능한지
+    bool IsMoving = false; //버블이 매치로 인해, 움직이고 있을 시의 플래그
 
-    ScoreSystem scoreSystem; // 점수 시스템
-
-    public bool EnableInput = true; // 입력이 가능한지
-
-    // 버블들 정보
-    public RuntimeAnimatorController AnimCont_Blue;
-    public RuntimeAnimatorController AnimCont_Green;
-    public RuntimeAnimatorController AnimCont_Orange;
-    public RuntimeAnimatorController AnimCont_Red;
-    public RuntimeAnimatorController AnimCont_Yellow;
-
-    // 버블들 이미지
-    public Sprite Sprite_Blue;
-    public Sprite Sprite_Green;
-    public Sprite Sprite_Orange;
-    public Sprite Sprite_Red;
-    public Sprite Sprite_Yellow;
-
-    bool IsMoving = false;
+    //버블들 정보
+    public List<RuntimeAnimatorController> BubbleAnimContsList;
+    public List<Sprite> BubbleSpritesList;
 
     int typeCnt = 1;
-
-    string strtest;
 
     private void Awake()
     {
@@ -77,12 +60,6 @@ public class PuzzleSystem : MonoBehaviour
 
     private void Init(int initCount)
     {
-        /*       //큐 버전
-               for (int i = 0; i < initCount; i++)
-               {
-                   poolingObjectQueue.Enqueue(CreateNewObject()); //버블 생성
-               }*/
-
         for (int i = 0; i < RowNum; i++)
         {
             List<Bubble> tmpList = new List<Bubble>();
@@ -92,10 +69,7 @@ public class PuzzleSystem : MonoBehaviour
                 tmpList.Add(CreateNewObject(i, j));
             }
             poolingObjectsList.Add(tmpList);
-
         }
-
-
     }
 
     private Bubble CreateNewObject(int row, int cul)
@@ -106,34 +80,30 @@ public class PuzzleSystem : MonoBehaviour
         newObj.transform.SetParent(BubbleParent.transform);
 
         //타입 설정하기
-        newObj.m_type = (BubbleType)randomNum; //int -> enum
+        newObj.GetBubbleInfo().SetType((BubbleType)randomNum); //int -> enum
 
         // 이름 설정
-        newObj.name = "Bubble" + newObj.m_type + " _" + row + " _" + cul;
+        newObj.name = "Bubble" + newObj.GetBubbleInfo().GetType() + " _" + row + " _" + cul;
 
         return newObj;
     }
 
+    // row, cul에 맞는 퍼즐을 꺼낸다.
     public static Bubble GetObject(int row, int cul)
     {
         if (Instance.poolingObjectsList.Count > 0)
-        //if (Instance.poolingObjectQueue.Count > 0)
         {
             var obj = Instance.poolingObjectsList[row][cul];
-            //var obj = Instance.poolingObjectQueue.Dequeue(); //큐에서 오브젝트 꺼내기
-
-            //obj.transform.SetParent(null);
             obj.transform.SetParent(BubbleParent.transform);
             obj.gameObject.SetActive(true);
+
             return obj;
         }
         else //다 꺼내고 없을 때 
         {
             var newObj = Instance.CreateNewObject(0, 0);
-
             newObj.gameObject.SetActive(true);
             newObj.transform.SetParent(BubbleParent.transform);
-            //newObj.transform.SetParent(null);
 
             return newObj;
         }
@@ -152,7 +122,6 @@ public class PuzzleSystem : MonoBehaviour
     }
 
 
-    // Start is called before the first frame update
     void Start()
     {
 
@@ -189,10 +158,9 @@ public class PuzzleSystem : MonoBehaviour
         StartCoroutine(ScanUntilNoMatch_Co());
     }
 
+    // 스캔되는 버블이 없을 때까지 반복해서 스캔
     IEnumerator ScanUntilNoMatch_Co()
-    {
-
-        // 스캔되는 버블이 없을 때까지 반복
+    {  
         while (true)
         {
             yield return new WaitForSeconds(0.01f);
@@ -217,7 +185,7 @@ public class PuzzleSystem : MonoBehaviour
     void Update()
     {
 
-        if (IsMoving)
+        if (IsMoving) 
             EnableInput = false;
         else
         {
@@ -228,7 +196,7 @@ public class PuzzleSystem : MonoBehaviour
     }
 
 
-    // 버블의 위치 바꾸기
+    // 선택한 버블의 위치 바꾸기
     void ChangeBubblePosition()
     {
         if (SelectedBubbleIdxs[0].row != -1 && SelectedBubbleIdxs[0].cul != -1
@@ -309,8 +277,6 @@ public class PuzzleSystem : MonoBehaviour
         }
         else // 매치가 될 시
         {
-            // 스캔되는 버블이 없을 때까지 반복
-            //ScanUntilNoMatch();
             IsMoving = false;
         }
 
@@ -344,7 +310,7 @@ public class PuzzleSystem : MonoBehaviour
                 // root 변경
                 root = GetObject(i, j);
                 if (root.GetVisited()) continue; // 가본 노드면 패스하기
-                if (root.m_state == BubbleState.Matched) continue; // 매치가 된 상태면 패스하기
+                if (root.GetBubbleInfo().GetState() == BubbleState.Matched) continue; // 매치가 된 상태면 패스하기
 
                 typeCnt = 1;
                 queue.Enqueue(root); //큐의 끝에 Enqueue
@@ -395,7 +361,7 @@ public class PuzzleSystem : MonoBehaviour
                     // 매칭된 버블 리스트에 모은 같은 타입 버블 리스트를 추가하기
                     for (int s = 0; s < SameTypeBubbles.Count; s++)
                     {
-                        SameTypeBubbles[s].m_state = BubbleState.Matched; // 매치된 상태로 변경
+                        SameTypeBubbles[s].GetBubbleInfo().SetState(BubbleState.Matched); // 매치된 상태로 변경
                         MatchedBubbles.Add(SameTypeBubbles[s]);
                     }
                 }
@@ -414,17 +380,16 @@ public class PuzzleSystem : MonoBehaviour
         }
 
         // 매치된 버블들의 타입과 이미지 변경
-        //Debug.Log(MatchedBubbles.Count);
         for (int m = 0; m < MatchedBubbles.Count; m++)
         {
             int randomNum = (int)Random.Range(0, PrefabNum);
-            MatchedBubbles[m].ChangeTypeAndImg(randomNum);
+            MatchedBubbles[m].ChangeTypeAndLooks(randomNum);
         }
 
         // 매칭된 버블들의 매치 상태 초기화
         for (int m = 0; m < MatchedBubbles.Count; m++)
         {
-            MatchedBubbles[m].m_state = BubbleState.UnMatched;
+            MatchedBubbles[m].GetBubbleInfo().SetState(BubbleState.UnMatched);
         }
 
         // 매칭된 버블들 리스트 삭제
@@ -438,15 +403,14 @@ public class PuzzleSystem : MonoBehaviour
 
     void AddToMatchedBubbles(Bubble r, int r_row, int r_cul, Queue queue, List<Bubble> SameTypeBubbles)
     {
-        //Bubble b = Instance.poolingObjectsList[r_row][r_cul]; //인접 노드
         Bubble b = GetObject(r_row, r_cul);
 
-        if (b.GetVisited() == false && b.m_state == BubbleState.UnMatched) // 방문하지 않았고 + 매치되지 않았다면
+        if (b.GetVisited() == false && b.GetBubbleInfo().GetState() == BubbleState.UnMatched) // 방문하지 않았고 + 매치되지 않았다면
         {
             b.SetVisited(true); // 방문한 노드 체크
 
             // 타입이 같다면
-            if (b.m_type == r.m_type)
+            if (b.GetBubbleInfo().GetType_() == r.GetBubbleInfo().GetType_())
             {
                 typeCnt++;
                 queue.Enqueue(b); // 큐의 끝에 Enqueue
@@ -456,21 +420,9 @@ public class PuzzleSystem : MonoBehaviour
         }
     }
 
-    IEnumerator ChangeMatchedBubbles(List<Bubble> MatchedBubbles)
-    {
-        yield return null;
-    }
-
     void InitAllVisited()
     {
-        for (int i = 0; i < RowNum; i++)
-        {
-            for (int j = 0; j < CulNum; j++)
-            {
-                GetObject(i, j).SetVisited(false);
-            }
-        }
-
+        for (int i = 0; i < RowNum; i++) for (int j = 0; j < CulNum; j++) GetObject(i, j).SetVisited(false);
     }
 
 }
