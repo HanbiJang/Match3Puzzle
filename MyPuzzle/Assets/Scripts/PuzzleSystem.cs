@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public struct SelectedBubbleIdx
+public class SelectedBubbleIdx
 {
-    public int row, cul;
+    public int row = -1, cul = -1;
 }
 
 public class PuzzleSystem : MonoBehaviour
@@ -45,50 +45,45 @@ public class PuzzleSystem : MonoBehaviour
         PrefabNum = poolingObjectPrefabs.Count;
         BubbleNum = RowNum * CulNum;
         Instance = this;
-        Init(BubbleNum); //버블 만들어주기
 
-        //버블 선택 인덱스
-        SelectedBubbleIdx tmp = new SelectedBubbleIdx();
-        tmp.row = -1; tmp.cul = -1;
-        SelectedBubbleIdxs = new SelectedBubbleIdx[2];
-        SelectedBubbleIdxs[0] = tmp;
-        SelectedBubbleIdxs[1] = tmp;
+        InitPuzzle(BubbleNum); //버블 만들어주기
 
-        // 점수 시스템
+        // 버블 선택 인덱스 초기화
+        InitSelectedBubbleIdxs();
+
+        //점수 시스템
         scoreSystem = GameObject.Find("Score System").GetComponent<ScoreSystem>();
     }
 
-    private void Init(int initCount)
+    private void InitPuzzle(int initCount)
     {
         for (int i = 0; i < RowNum; i++)
         {
-            List<Bubble> tmpList = new List<Bubble>();
-            //열 만들기
+            List<Bubble> rowBubbles = new List<Bubble>();
+
             for (int j = 0; j < CulNum; j++)
             {
-                tmpList.Add(CreateNewObject(i, j));
+                rowBubbles.Add(CreateNewObject(i, j));
             }
-            poolingObjectsList.Add(tmpList);
+            poolingObjectsList.Add(rowBubbles);
         }
     }
 
     private Bubble CreateNewObject(int row, int cul)
     {
         int randomNum = (int)Random.Range(0, PrefabNum);
-        var newObj = Instantiate(poolingObjectPrefabs[randomNum]).GetComponent<Bubble>(); //생성
+        Bubble newObj = Instantiate(poolingObjectPrefabs[randomNum]).GetComponent<Bubble>();
+
         newObj.gameObject.SetActive(false);
         newObj.transform.SetParent(BubbleParent.transform);
-
-        //타입 설정하기
-        newObj.GetBubbleInfo().SetType((BubbleType)randomNum); //int -> enum
-
-        // 이름 설정
-        newObj.name = "Bubble" + newObj.GetBubbleInfo().GetType() + " _" + row + " _" + cul;
+        newObj.GetBubbleInfo().Init(row, cul);
+        newObj.GetBubbleInfo().SetType((BubbleType)randomNum);
+        newObj.name = $"Bubble{newObj.GetBubbleInfo().GetType()}_{row}_{cul}";
 
         return newObj;
     }
 
-    // row, cul에 맞는 퍼즐을 꺼낸다.
+    // 행(row)과 열(cul)에 해당하는 퍼즐 버블을 오브젝트 풀에서 가져옴
     public static Bubble GetObject(int row, int cul)
     {
         if (Instance.poolingObjectsList.Count > 0)
@@ -101,7 +96,8 @@ public class PuzzleSystem : MonoBehaviour
         }
         else //다 꺼내고 없을 때 
         {
-            var newObj = Instance.CreateNewObject(0, 0);
+            //var newObj = Instance.CreateNewObject(0, 0);
+            var newObj = Instance.CreateNewObject(row, cul);
             newObj.gameObject.SetActive(true);
             newObj.transform.SetParent(BubbleParent.transform);
 
@@ -112,19 +108,13 @@ public class PuzzleSystem : MonoBehaviour
     public static void ReturnObject(int row, int cul)
     {
         var obj = Instance.poolingObjectsList[row][cul];
-
         obj.gameObject.SetActive(false);
-
         obj.transform.SetParent(BubbleParent.transform);
-        //obj.transform.SetParent(Instance.transform);
-
-        //Instance.poolingObjectQueue.Enqueue(obj); //큐에 되돌려 주는 작업을 주석 처리
     }
 
 
     void Start()
     {
-
         //위치 배치하기
         Vector3 tmp1 = StartPosition;
         Vector3 tmp2 = StartPosition;
@@ -150,7 +140,7 @@ public class PuzzleSystem : MonoBehaviour
             tmp2 += new Vector3(30, 0, 0);
         }
 
-        ScanUntilNoMatch();
+        //ScanUntilNoMatch();
     }
 
     void ScanUntilNoMatch()
@@ -172,10 +162,7 @@ public class PuzzleSystem : MonoBehaviour
         }
 
         //선택 초기화
-        SelectedBubbleIdxs[0].row = -1;
-        SelectedBubbleIdxs[0].cul = -1;
-        SelectedBubbleIdxs[1].row = -1;
-        SelectedBubbleIdxs[1].cul = -1;
+        InitSelectedBubbleIdxs();
         IsMoving = false;
 
         yield return null;
@@ -287,6 +274,15 @@ public class PuzzleSystem : MonoBehaviour
 
     void InitSelectedBubbleIdxs()
     {
+        if (SelectedBubbleIdxs == null) {
+            SelectedBubbleIdxs = new SelectedBubbleIdx[2];
+
+            // 각 요소에 SelectedBubbleIdx 인스턴스 할당 (객체의 생성자가 호출되지 않음)
+            for (int i = 0; i < SelectedBubbleIdxs.Length; i++)
+            {
+                SelectedBubbleIdxs[i] = new SelectedBubbleIdx();
+            }
+        }
         //선택 초기화
         SelectedBubbleIdxs[0].row = -1;
         SelectedBubbleIdxs[0].cul = -1;
@@ -370,10 +366,11 @@ public class PuzzleSystem : MonoBehaviour
                 typeCnt = 1;
 
                 // 같은 타입들 버블 초기화
-                for (int s = 0; s < SameTypeBubbles.Count; s++)
-                {
-                    SameTypeBubbles.RemoveAt(s);
-                }
+                //for (int s = 0; s < SameTypeBubbles.Count; s++)
+                //{
+                //    SameTypeBubbles.RemoveAt(s);
+                //}
+                SameTypeBubbles.Clear();
                 // 모든 visit 초기화
                 InitAllVisited();
             }
@@ -393,10 +390,7 @@ public class PuzzleSystem : MonoBehaviour
         }
 
         // 매칭된 버블들 리스트 삭제
-        for (int m = 0; m < MatchedBubbles.Count; m++)
-        {
-            MatchedBubbles.RemoveAt(m);
-        }
+        MatchedBubbles.Clear();
 
         return HasMatchedBubbles;
     }
