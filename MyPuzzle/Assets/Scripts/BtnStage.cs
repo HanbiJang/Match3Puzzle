@@ -6,7 +6,7 @@ using UnityEngine.SceneManagement;
 public class BtnStage : MonoBehaviour
 {
     string SceneName;
-    int MaxStageNum;
+    //int MaxStageNum;
     int StageNum;
 
     public GameObject ToastM;
@@ -16,7 +16,7 @@ public class BtnStage : MonoBehaviour
     {
         if (gameObject.GetComponent<StageInform>())
             gameObject.GetComponent<StageInform>().GetStageNum();
-        MaxStageNum = 3;
+        //MaxStageNum = 3;
         SceneName = "GameScene";
     }
 
